@@ -252,15 +252,17 @@ elif args.mode == "PP":
     firstScene = True
     for datum in dataList:
         if (
-            list_Excluded_byFig.loc[list_Excluded_byFig.filename == datum, "type"]
+            list_Excluded_byFig.loc[
+                list_Excluded_byFig.filename == datum, "type"
+            ].values
             == "PP"
-        ).bool():
+        ):
             while True:
                 if keyboard.read_key(suppress=True) == "w":
                     print(f"\nNo:{num_trial} | remains: {num_PP-num_trial}")
                     num_trial = num_trial + 1
                     break
-                if keyboard.read_key(suppress=True) == "p":
+                if keyboard.read_key(suppress=True) == "p":  # 제거할 파일
                     print("\nwait for saving the list...")
                     list_Excluded_byFig.to_excel(
                         os.path.join(dataDir, listName), index=False
@@ -268,8 +270,16 @@ elif args.mode == "PP":
                     print("See you!")
                     quit()
             print(f"Target: {datum}")
+            basename = basename = os.path.basename(datum)
             plot = subprocess.Popen(
-                [os.path.join(figDir, datum.split(".")[-2] + ".pdf")], shell=True
+                [
+                    os.path.join(
+                        figDir,
+                        basename.split("_")[0],
+                        basename.replace(".xlsx", ".pdf"),
+                    )
+                ],
+                shell=True,
             )
             while True:
 

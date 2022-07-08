@@ -2,7 +2,6 @@
 import os
 import shutil
 from os.path import join
-from natsort import natsorted
 
 
 class DirController:

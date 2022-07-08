@@ -1,0 +1,5 @@
+{
+  "dataDir": ".",
+  "dataExt": "IMU",
+  "checkList_filename": "CheckList.xlsx"
+}

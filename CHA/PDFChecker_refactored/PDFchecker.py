@@ -1,15 +1,7 @@
 # This code was written by OrientPine.
 
 # 필요한 라이브러리
-from re import A
-from tqdm import tqdm
-from natsort import natsorted
-import os
-import pandas as pd
-import shutil
-import argparse
-import keyboard
-import subprocess
+import json
 
 # custom module
 from module_CBD.directory import DirController
@@ -18,10 +10,12 @@ from module_CBD.excel_base import ExcelBase
 
 
 def main():
-    # 필요한 경로 정의
-    dataDir = r"."
-    dataExt = r"IMU"
-    checkList_filename = "CheckList.xlsx"
+    # 필요한 설정값을 설정 파일에서 불러오기
+    with open("settings.json", "r") as f:
+        settings = json.load(f)
+    dataDir = settings["dataDir"]
+    dataExt = settings["dataExt"]
+    checkList_filename = settings["checkList_filename"]
     # 프로그램 mode 입력받기
     args = makeArgs()
     # 경로 관련 클래스 초기화

@@ -9,10 +9,8 @@ import subprocess
 from natsort import natsorted
 import pandas as pd
 import keyboard
-import signal
 import subprocess
 import psutil
-import math
 import shutil
 import argparse
 from tqdm import tqdm

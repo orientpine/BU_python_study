@@ -15,32 +15,29 @@ import subprocess
 from module_CBD.directory import DirController
 from module_CBD.parse import makeArgs
 from module_CBD.excel_base import ExcelBase
-from module_CBD.cli import Cli
 
 
 def main():
     # 필요한 경로 정의
     dataDir = r"."
     dataExt = r"IMU"
+    checkList_filename = "CheckList.xlsx"
     # 프로그램 mode 입력받기
     args = makeArgs()
     # 경로 관련 클래스 초기화
     directory = DirController(dataDir, dataExt)
     # 엑셀베이스 관련 클래스 초기화
-    excelBase = ExcelBase("CheckList.xlsx", dataDir)
+    excelBase = ExcelBase(checkList_filename, dataDir)
     # 원하는 파일로 데이터베이스만들기 혹은 있으면 해당 파일 불러오기
-    checkList = excelBase.load(directory.get_rawDir(), dataExt)
-    # CLI 관련 클래스 초기화
-    clInterface = Cli(checkList)
-    # CLI 상태창
-    clInterface.status()
+    excelBase.load(directory.get_rawDir(), dataExt)
+    # 현재 데이터 확인
+    excelBase.showStatus()
 
     if args.mode == "CHK" or args.mode == "PP":
+        # 확인모드! 아직 점검하지 않은 파일을 보거나, 결정을 미룬 파일을 다시 보거나!
         # CLI QC 책임자 확인
-        name = clInterface.identify()
-        # CLI 메뉴얼 보여주기
-        clInterface.showManual()
-        excelBase.doTask(args.mode, directory.get_figDir(), name)
+        excelBase.identify()
+        excelBase.doTask(args.mode, directory.get_figDir())
     if args.mode == "EXP":
         # 출력모드! 기존에 있던 폴더 몽땅 날리기
         directory.refreshDir_all()

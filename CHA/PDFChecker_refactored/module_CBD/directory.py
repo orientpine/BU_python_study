@@ -25,6 +25,9 @@ class DirController:
     def get_rawDir(self):
         return self.rawDir
 
+    def get_figDir(self):
+        return self.figDir
+
     def get_includeDir(self):
         return self.includeDir
 

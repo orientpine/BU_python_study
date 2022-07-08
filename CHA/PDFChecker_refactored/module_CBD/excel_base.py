@@ -1,4 +1,5 @@
 import os
+from numpy import True_
 import pandas as pd
 import shutil
 import keyboard
@@ -12,7 +13,10 @@ class ExcelBase:
     def __init__(self, filename, location):
         self.filename = filename
         self.location = location
+        self.name = None
         self.checkList = None
+        self.count = 0
+        self.flag = None
 
     def load(self, rawDir, dataExt):
         self.dataList = natsorted(
@@ -32,35 +36,41 @@ class ExcelBase:
             )
             self.checkList["filename"] = self.dataList
             self.checkList["type"] = "TBD"
-        return self.checkList
 
-    def doTask(self, taskType, figDir, chk_name):
+    def identify(self):
+        while self.name == None:
+            self.name = input("Type your Name : ")
+        print(f"{self.name} is entering...")
+        return self.name
+
+    def showManual(self):
+        print("||   KEY - FUNCTION   ||")
+        print("|| 'w' - go next file || 'p' - terminate program ||")
+        print("|| 'q' - for include  || 'e' - for exclude       ||")
+        print("|| 's' - for postpone ||                         ||")
+
+    def showStatus(self):
+        print("=== STATUS ===")
+        print(self.checkList["type"].value_counts())
+
+    def doTask(self, taskType, figDir):
         if taskType == "CHK":
-            flag = "TBD"
+            self.flag = "TBD"
         else:
-            flag = "PP"
-
-        count = 0
+            self.flag = "PP"
+        # 처리해야하는게 있으면 메뉴얼 보여주기
+        self.showManual()
         for datum in self.checkList["filename"]:
             if (
                 self.checkList.loc[self.checkList.filename == datum, "type"].values
-                == flag
+                == self.flag
             ):
-                num_flag = self.checkList["type"].value_counts()[flag]
+
                 while True:
-                    if keyboard.read_key(suppress=True) == "w":
-                        print(f"\nNo:{count} | remains: {num_flag-count}")
-                        count = count + 1
+                    if self.receive_pass():
                         break
-                    if keyboard.read_key(suppress=True) == "p":  # 프로그램 종료
-                        print("\nwait for saving the list...")
-                        self.checkList.to_excel(
-                            os.path.join(self.location, self.filename), index=False
-                        )
-                        print("See you!")
-                        quit()
                 print(f"Target: {datum}")
-                basename = basename = os.path.basename(datum)
+                basename = os.path.basename(datum)
                 plot = subprocess.Popen(
                     [
                         os.path.join(
@@ -71,45 +81,13 @@ class ExcelBase:
                     ],
                     shell=True,
                 )
-                while True:
-                    if keyboard.read_key(suppress=True) == "q":  # 포함시킬 파일
-                        self.checkList.loc[
-                            self.checkList.filename == datum, "type"
-                        ] = "IN"
-                        self.checkList.loc[
-                            self.checkList.filename == datum, "checker"
-                        ] = chk_name
 
-                        # if not os.path.exists(os.path.join(includeDir,datum)): # 파일이 이미 있으면 그냥 지나감
-                        #     shutil.copyfile(os.path.join(rawDir, datum), os.path.join(includeDir,datum))
-                        print(f"Included!: {datum}")
+                while True:
+                    if self.receive_decision(datum, "q", "IN"):
                         break
-                    if keyboard.read_key(suppress=True) == "e":  # 제거할 파일
-                        self.checkList.loc[
-                            self.checkList.filename == datum, "type"
-                        ] = "EXC"
-                        self.checkList.loc[
-                            self.checkList.filename == datum, "checker"
-                        ] = chk_name
-                        # if not os.path.exists(os.path.join(includeDir,datum)): # 파일이 이미 있으면 그냥 지나감
-                        #     shutil.copyfile(os.path.join(rawDir, datum), os.path.join(excludeDir,datum))
-                        print(f"Excluded!: {datum}")
+                    if self.receive_decision(datum, "e", "EXC"):
                         break
-                    if keyboard.read_key(suppress=True) == "s":  # 포함시킬 파일
-                        self.checkList.loc[
-                            self.checkList.filename == datum, "type"
-                        ] = "PP"
-                        print("Enter your note:")
-                        reason = input()
-                        self.checkList.loc[
-                            self.checkList.filename == datum, "note"
-                        ] = reason
-                        self.checkList.loc[
-                            self.checkList.filename == datum, "checker"
-                        ] = chk_name
-                        # if not os.path.exists(os.path.join(includeDir,datum)): # 파일이 이미 있으면 그냥 지나감
-                        #     shutil.copyfile(os.path.join(rawDir, datum), os.path.join(postpondDir,datum))
-                        print(f"Postponed!: {datum}")
+                    if self.receive_decision(datum, "s", "PP"):
                         break
                 kill(plot.pid)
 
@@ -118,6 +96,35 @@ class ExcelBase:
         self.checkList.to_excel(os.path.join(self.location, self.filename), index=False)
         print("See you!")
         quit()
+
+    def receive_pass(self):
+        num_flag = self.checkList["type"].value_counts()[self.flag]
+        if keyboard.read_key(suppress=True) == "w":
+            print(f"\nNo:{self.count} | remains: {num_flag-self.count}")
+            self.count = self.count + 1
+            return True
+        elif keyboard.read_key(suppress=True) == "p":  # 프로그램 종료
+            print("\nwait for saving the list...")
+            self.checkList.to_excel(
+                os.path.join(self.location, self.filename), index=False
+            )
+            print("See you!")
+            quit()
+        else:
+            return False
+
+    def receive_decision(self, datum, inputKey, mark):
+        if keyboard.read_key(suppress=True) == inputKey:  # 제거할 파일
+            self.checkList.loc[self.checkList.filename == datum, "type"] = mark
+            self.checkList.loc[self.checkList.filename == datum, "checker"] = self.name
+
+            if mark == "PP":
+                reason = input("Enter your note : ")
+                self.checkList.loc[self.checkList.filename == datum, "note"] = reason
+            print(f"{mark}: {datum}")
+            return True
+        else:
+            return False
 
     def doExport(self, includeDir, excludeDir, postponedDir):
         print("\n=== EXPORT MODE ===")

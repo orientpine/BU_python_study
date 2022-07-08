@@ -7,6 +7,7 @@ class Cli:
         while len(self.name) == 0:
             self.name = input("Type your Name : ")
         print(f"{self.name} is entering...")
+        return self.name
 
     def status(self):
         print("=== STATUS ===")

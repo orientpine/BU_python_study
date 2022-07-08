@@ -3,6 +3,7 @@ import pandas as pd
 import shutil
 import keyboard
 import subprocess
+from natsort import natsorted
 from module_CBD.process import kill
 from tqdm import tqdm
 
@@ -13,7 +14,14 @@ class ExcelBase:
         self.location = location
         self.checkList = None
 
-    def load(self, dataList):
+    def load(self, rawDir, dataExt):
+        self.dataList = natsorted(
+            [
+                os.path.join(path[0], path[2][0])
+                for path in list(os.walk(rawDir))
+                if (dataExt in path[0])
+            ]
+        )
         if os.path.isfile(os.path.join(self.location, self.filename)):
             self.checkList = pd.read_excel(
                 os.path.join(self.location, self.filename), engine="openpyxl"
@@ -22,7 +30,7 @@ class ExcelBase:
             self.checkList = pd.DataFrame(
                 columns=["filename", "type", "note", "checker"]
             )
-            self.checkList["filename"] = dataList
+            self.checkList["filename"] = self.dataList
             self.checkList["type"] = "TBD"
         return self.checkList
 
@@ -111,7 +119,7 @@ class ExcelBase:
         print("See you!")
         quit()
 
-    def doExport(self,includeDir,excludeDir,postponedDir):
+    def doExport(self, includeDir, excludeDir, postponedDir):
         print("\n=== EXPORT MODE ===")
         print("now exporting files...")
 
@@ -119,8 +127,7 @@ class ExcelBase:
             basename = os.path.basename(file)
             # type에서 IN이라고 되어 있는 file이 있으면
             if (
-                self.checkList.loc[self.checkList.filename == file, "type"]
-                == "IN"
+                self.checkList.loc[self.checkList.filename == file, "type"] == "IN"
             ).bool():
                 # 순회하면서 "IN"인 것만 raw에 저장하기
                 if not os.path.exists(
@@ -130,8 +137,7 @@ class ExcelBase:
 
             # type에서 IN이라고 되어 있는 file이 있으면
             elif (
-                self.checkList.loc[self.checkList.filename == file, "type"]
-                == "EXC"
+                self.checkList.loc[self.checkList.filename == file, "type"] == "EXC"
             ).bool():
                 # 순회하면서 "IN"인 것만 raw에 저장하기
                 if not os.path.exists(
@@ -140,8 +146,7 @@ class ExcelBase:
                     shutil.copyfile(file, os.path.join(excludeDir, basename))
             # type에서 IN이라고 되어 있는 file이 있으면
             elif (
-                self.checkList.loc[self.checkList.filename == file, "type"]
-                == "PP"
+                self.checkList.loc[self.checkList.filename == file, "type"] == "PP"
             ).bool():
                 # 순회하면서 "IN"인 것만 raw에 저장하기
                 if not os.path.exists(

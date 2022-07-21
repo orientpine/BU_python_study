@@ -97,6 +97,7 @@ if "TBD" in list_Excluded_byFig["type"].value_counts():
     num_TBD = list_Excluded_byFig["type"].value_counts()["TBD"]
 if "PP" in list_Excluded_byFig["type"].value_counts():
     num_PP = list_Excluded_byFig["type"].value_counts()["PP"]
+
 if args.mode == "EXP":
     print("\n=== EXPORT MODE ===")
     print("now exporting files...")

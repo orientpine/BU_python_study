@@ -11,7 +11,7 @@ class DirController:
         self.dataExt = dataExt
         # 자동 설정
         self.rawDir = join(dataDir, "RAW")
-        self.figDir = join(dataDir, "FIG")
+        self.figDir = join(dataDir, "figure")
         self.includeDir = join(dataDir, "CHK", "RAW")
         self.excludeDir = join(dataDir, "EXC")
         self.postponedDir = join(dataDir, "PP")

@@ -29,12 +29,14 @@ def main():
 
     if args.mode == "CHK" or args.mode == "PP":
         # 확인모드! 아직 점검하지 않은 파일을 보거나, 결정을 미룬 파일을 다시 보거나!
-        # CLI QC 책임자 확인
+        # QC 책임자 확인
         excelBase.identify()
+        # 확인하기
         excelBase.doTask(args.mode, directory.get_figDir())
     if args.mode == "EXP":
         # 출력모드! 기존에 있던 폴더 몽땅 날리기
         directory.refreshDir_all()
+        # 출력하기
         excelBase.doExport(
             directory.get_includeDir(),
             directory.get_excludeDir(),
